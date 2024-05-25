@@ -24,6 +24,19 @@ export const ExpensesRoutes = new Hono()
     .get('/', async c => {
         return c.json(fakeExpenses)
     })
+    /* Dynamic route that takes in an id as path param and returns the expense with that id
+    Hono] allows us to pass in a regex to validate the path param, the one passed in here is for 1 or more numbers only
+    If the hte path param is not a number, it will throw a 404 error
+    */
+    .get('/:id{[0-9]+}', async c => {
+        const id = Number.parseInt(c.req.param('id'));
+        const expense = fakeExpenses.find(e => e.id === id);
+        if (!expense) {
+            // returns a `404 not found` error if the expense with the id is not found
+            return c.notFound();
+        }
+        return c.json({expense})
+    })
     // zValidator() happens before the route is reached and made sure the data passed in is valid
     .post('/', zValidator("json", createExpenseSchema), async c => {
         const data = await c.req.valid("json"); // .json() is replaced with valid("json"), which contain anything that was validated before the route
@@ -31,6 +44,6 @@ export const ExpensesRoutes = new Hono()
         const expense = createExpenseSchema.parse(data);
         fakeExpenses.push({ ...expense, id: fakeExpenses.length+1});
         console.log(expense);
-        
+        c.status(201); // returns a `201 created` status code
         return c.json(expense);
     })
