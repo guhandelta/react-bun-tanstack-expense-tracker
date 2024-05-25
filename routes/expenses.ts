@@ -2,22 +2,22 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 
-type Expense = {
-    id: number;
-    title: string;
-    amount: number;
-};
-
 const fakeExpenses: Expense[] = [
     {id: 1, title: 'Groceries', amount: 100},
     {id: 2, title: 'Rent', amount: 1000},
     {id: 3, title: 'Car', amount: 5000},
 ];
 
-const createExpenseSchema = z.object({
-    title: z.string().min(3).max(50),
+const expemseSchema = z.object({
+    id: z.number().int().positive().min(1),
+    title: z.string().min(3).max(75),
     amount: z.number().int().positive(),
 });
+
+const createExpenseSchema = expemseSchema.omit({id: true});
+
+// To get the zod obhect as a TypeScript type
+type Expense = z.infer<typeof expemseSchema>;
 
 // The endpoints can be chained togetheror created separately as done in an Node/Express app
 export const ExpensesRoutes = new Hono()
