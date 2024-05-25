@@ -47,3 +47,13 @@ export const ExpensesRoutes = new Hono()
         c.status(201); // returns a `201 created` status code
         return c.json(expense);
     })
+    .delete('/:id{[0-9]+}', async c => {
+        const id = Number.parseInt(c.req.param('id'));
+        const expense = fakeExpenses.findIndex(e => e.id === id);
+        if (!expense) {
+            // returns a `404 not found` error if the expense with the id is not found
+            return c.notFound();
+        }
+        const deletedExpense = fakeExpenses.splice(expense, 1)[0];
+        return c.json({ expense: deletedExpense})
+    })
