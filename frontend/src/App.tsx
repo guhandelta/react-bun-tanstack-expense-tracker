@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 // import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,6 +11,13 @@ import {
 import './App.css' 
 
 function App() {
+
+  useEffect(() => {
+    fetch('http://localhost:4000/api/expenses/total-spent')
+      .then(res => res.json())
+      .then(data => setTotalSpent(data.total))
+  }, []);
+
   const [totalSpent, setTotalSpent] = useState(0)
 
   return (

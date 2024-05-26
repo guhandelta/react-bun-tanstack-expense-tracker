@@ -37,6 +37,10 @@ export const ExpensesRoutes = new Hono()
         }
         return c.json({expense})
     })
+    .get('/total-spent', c => {
+        const total = fakeExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+        return c.json({ total })
+    })
     // zValidator() happens before the route is reached and made sure the data passed in is valid
     .post('/', zValidator("json", createExpenseSchema), async c => {
         const data = await c.req.valid("json"); // .json() is replaced with valid("json"), which contain anything that was validated before the route
