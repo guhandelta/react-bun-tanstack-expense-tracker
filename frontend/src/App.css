@@ -1,8 +1,14 @@
 #root {
   max-width: 1280px;
+  text-align: center;
   margin: 0 auto;
   padding: 2rem;
-  text-align: center;
+}
+
+*{
+  font-family: 'Inter', sans-serif;
+  background: #101010;
+  color: #cecece;
 }
 
 .logo {
