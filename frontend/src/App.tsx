@@ -9,14 +9,16 @@ import {
 } from "@/components/ui/card"
 
 import './App.css' 
+import { api } from './lib/api';
 
 function App() {
 
   useEffect(() => {
     async function fetchTotalSpent() {
-      fetch('/api/expenses/total-spent')
-      .then(res => res.json())
-      .then(({ total }) => setTotalSpent(total))
+
+      const res = await api.expenses['total-spent'].$get();
+      const { total } = await  res.json();
+      setTotalSpent(total);
     }
     fetchTotalSpent();
   }, []);

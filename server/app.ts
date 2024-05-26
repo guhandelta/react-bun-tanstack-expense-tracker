@@ -8,7 +8,8 @@ const app = new Hono();
 // Utilize the logger middleware from Hono
 app.use('*', logger());
 
-app.route('/api/expenses', ExpensesRoutes);
+const apiRoutes = app.basePath('/api')
+    .route('/expenses', ExpensesRoutes);
 
 // Hosting the static files, generated from the buiid, from the frontend/dist folder
 app.get('*', serveStatic({ root:'./frontend/dist' }));
@@ -19,3 +20,5 @@ Anything that is not handled by the API would be handled by the React app withou
 app.get('*', serveStatic({ path: './frontend/dist/index.html' }));
 
 export default app;
+// For Hono RPC | ApiRoutes is just a TS type which holds all the types of all the API routes
+export type ApiRoutes = typeof apiRoutes;
