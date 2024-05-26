@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+
 // import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -10,20 +10,30 @@ import {
 
 import './App.css' 
 import { api } from './lib/api';
+import { useQuery } from '@tanstack/react-query';
 
 function App() {
 
-  useEffect(() => {
-    async function fetchTotalSpent() {
+  async function getTotalSpent() {
+    const res = await api.expenses['total-spent'].$get();
 
-      const res = await api.expenses['total-spent'].$get();
-      const { total } = await  res.json();
-      setTotalSpent(total);
+    if (!res.ok) {
+      throw new Error('Failed to fetch total spent');
     }
-    fetchTotalSpent();
-  }, []);
 
-  const [totalSpent, setTotalSpent] = useState(0)
+    const { total } = await res.json();
+    return total;
+  }
+
+  /*with React 19, the entire functionality of useState and useEffect hooks here, can be shrunk within the use() hook
+  const totalSpent = use(api.expenses['total-spent'].$get());
+
+  Even Suspense and SuspenseQuery can be used to handle the loading state of the data, and use Suspense Boundaies and Error Boundaries, but Tanstack Query provides a lot more options
+  */
+
+  const { isPending, data, error } = useQuery({ queryKey: ['total-spent'], queryFn: getTotalSpent });
+
+  error && <p>Error: { error.message }</p>
 
   return (
     <>
@@ -33,7 +43,7 @@ function App() {
           <CardDescription>This is what you've spent:</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>{totalSpent}</p>
+          <p>{ isPending ? '...' : data }</p>
         </CardContent>
       </Card>
     </>

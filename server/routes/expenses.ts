@@ -37,7 +37,9 @@ export const ExpensesRoutes = new Hono()
         }
         return c.json({expense})
     })
-    .get('/total-spent', c => {
+    .get('/total-spent', async c => {
+        // This is just to simulate a delay in the API response
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const total = fakeExpenses.reduce((acc, curr) => acc + curr.amount, 0);
         return c.json({ total })
     })
