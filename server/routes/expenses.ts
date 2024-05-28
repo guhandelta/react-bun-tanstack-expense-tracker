@@ -22,6 +22,7 @@ type Expense = z.infer<typeof expemseSchema>;
 // The endpoints can be chained togetheror created separately as done in an Node/Express app
 export const ExpensesRoutes = new Hono()
     .get('/', async c => {
+        await new Promise(resolve => setTimeout(resolve, 1000));
         return c.json(fakeExpenses)
     })
     /* Dynamic route that takes in an id as path param and returns the expense with that id
