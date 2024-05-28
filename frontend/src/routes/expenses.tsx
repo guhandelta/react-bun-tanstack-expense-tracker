@@ -68,7 +68,7 @@ function Expenses() {
                         <TableRow>
                             <TableCell className="border border-solid border-white font-medium text-center">{id}</TableCell>
                             <TableCell className='border border-solid border-white text-center'>{title}</TableCell>
-                            <TableCell className='border border-solid border-white text-center'>{amount} Card</TableCell>
+                            <TableCell className='border border-solid border-white text-center'>{amount}</TableCell>
                         </TableRow>            
                     ))
                     }
