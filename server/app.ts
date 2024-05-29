@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { ExpensesRoutes } from './routes/expenses';
 import { serveStatic } from 'hono/bun';
+import { authRoute } from './routes/auth';
 
 const app = new Hono();
 
@@ -9,7 +10,8 @@ const app = new Hono();
 app.use('*', logger());
 
 const apiRoutes = app.basePath('/api')
-    .route('/expenses', ExpensesRoutes);
+    .route('/expenses', ExpensesRoutes)
+    .route('/', authRoute);
 
 // Hosting the static files, generated from the buiid, from the frontend/dist folder
 app.get('*', serveStatic({ root:'./frontend/dist' }));
