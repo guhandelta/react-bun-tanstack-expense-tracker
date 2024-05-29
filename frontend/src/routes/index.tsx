@@ -16,9 +16,7 @@ export const Route = createFileRoute('/')({
     component: Index
 })
 
-function Index() {
-
-    async function getTotalSpent() {
+async function getTotalSpent() {
     const res = await api.expenses['total-spent'].$get();
 
     if (!res.ok) {
@@ -27,7 +25,9 @@ function Index() {
 
     const { total } = await res.json();
     return total;
-    }
+}
+
+function Index() {
 
     /*with React 19, the entire functionality of useState and useEffect hooks here, can be shrunk within the use() hook
     const totalSpent = use(api.expenses['total-spent'].$get());
