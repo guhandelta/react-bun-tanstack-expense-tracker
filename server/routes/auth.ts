@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { kindeClient, sessionManager } from "../kinde";
+import { getUser, kindeClient, sessionManager } from "../kinde";
 
 // The app can access teh KindClient anytime it needs to do something with user authentication
 
@@ -24,15 +24,10 @@ export const authRoute = new Hono()
     return c.redirect(logoutUrl.toString());
 })
 // This route is just to check with the server if the user is authenticated or not
-.get('/me', async (c) => {
-    const manager = sessionManager(c);
-    const isAuthenticated = await kindeClient.isAuthenticated(manager); // Boolean: true or false
+.get('/me', getUser, async (c) => {
+    /* The context object will now have access to the var set in the middleware fn(), which right now includes the user object
 
-    if(!isAuthenticated){
-        return c.json({ error: "Unauthorized" }, 401);
-    }
-
-    // If the user is authenticated, send the user data to the client, when accessing the /api/me route
-    const user = await kindeClient.getUserProfile(manager);
+    This logic will get executes when the user is authenticated and the user data is available, and now send that back to the client*/
+    const user = c.var.user;
     return c.json({ user });
 });

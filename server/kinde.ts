@@ -1,6 +1,7 @@
-import { GrantType, createKindeServerClient, type SessionManager } from "@kinde-oss/kinde-typescript-sdk";
+import { GrantType, createKindeServerClient, type SessionManager, type UserType } from "@kinde-oss/kinde-typescript-sdk";
 import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
+import { createFactory, createMiddleware } from "hono/factory";
 
 // Client for authorization code flow
 export const kindeClient = createKindeServerClient(GrantType.AUTHORIZATION_CODE, {
@@ -49,3 +50,34 @@ export const sessionManager = (c: Context): SessionManager => ({
         });
     },
 });
+
+/*The user details, esp the user name, ID would be required when accessing any of the expense routes, as all of the expenses routes should only work for any user who is currently logged in. the logic writen for the route /api/me would be required for every single authenticated route in the backend.
+
+A custom middleware is composed in this file to make the user check logic written for /api/me, be available to all the other routes */
+
+type Env = {
+    Variables:{
+        user: UserType, // Type of the user that is fetched from getUserProfile()
+    }
+};
+
+export const getUser = createMiddleware<Env>(async (c, next) => {
+    try {
+        const manager = sessionManager(c);
+        const isAuthenticated = await kindeClient.isAuthenticated(manager); // Boolean: true or false
+
+        if(!isAuthenticated){
+            return c.json({ error: "Unauthorized" }, 401);
+        }
+        
+        // If the user is authenticated, send the user data to the client, when accessing the /api/me route
+        const user = await kindeClient.getUserProfile(manager);
+        
+        // Instead of sending the user data, it is stored in the cookie, so that it can be accessed by the client
+        /* await */ c.set("user", user);
+        await next();
+    } catch (error) {
+        console.error(error);
+        return c.json({ error: "Unauthorized" }, 401);
+    }
+})
