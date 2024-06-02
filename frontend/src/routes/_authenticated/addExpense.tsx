@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { api } from '@/lib/api'
 
-export const Route = createFileRoute('/addExpense')({
+export const Route = createFileRoute('/_authenticated/addExpense')({
     component: AddExpense
 })
 

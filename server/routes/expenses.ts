@@ -1,6 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
+import { getUser } from "../kinde";
 
 const fakeExpenses: Expense[] = [
     {id: 1, title: 'Groceries', amount: 100},
@@ -14,6 +15,8 @@ const expemseSchema = z.object({
     amount: z.number().int().positive(),
 });
 
+
+
 const createExpenseSchema = expemseSchema.omit({id: true});
 
 // To get the zod obhect as a TypeScript type
@@ -21,7 +24,9 @@ type Expense = z.infer<typeof expemseSchema>;
 
 // The endpoints can be chained togetheror created separately as done in an Node/Express app
 export const ExpensesRoutes = new Hono()
-    .get('/', async c => {
+    .get('/', getUser, async c => {
+        // Grab the user object from the context => extract the User ID to get the expenses for that user
+        const user = c.var.user;
         await new Promise(resolve => setTimeout(resolve, 1000));
         return c.json(fakeExpenses)
     })
@@ -29,7 +34,7 @@ export const ExpensesRoutes = new Hono()
     Hono] allows us to pass in a regex to validate the path param, the one passed in here is for 1 or more numbers only
     If the hte path param is not a number, it will throw a 404 error
     */
-    .get('/:id{[0-9]+}', async c => {
+    .get('/:id{[0-9]+}', getUser, async c => {
         const id = Number.parseInt(c.req.param('id'));
         const expense = fakeExpenses.find(e => e.id === id);
         if (!expense) {
@@ -38,14 +43,14 @@ export const ExpensesRoutes = new Hono()
         }
         return c.json({expense})
     })
-    .get('/total-spent', async c => {
+    .get('/total-spent', getUser, async c => {
         // This is just to simulate a delay in the API response
         await new Promise(resolve => setTimeout(resolve, 1000));
         const total = fakeExpenses.reduce((acc, curr) => acc + curr.amount, 0);
         return c.json({ total })
     })
     // zValidator() happens before the route is reached and made sure the data passed in is valid
-    .post('/', zValidator("json", createExpenseSchema), async c => {
+    .post('/', zValidator("json", createExpenseSchema), getUser, async c => {
         const data = await c.req.valid("json"); // .json() is replaced with valid("json"), which contain anything that was validated before the route
         // An Expense object is created from the data received from the request only if it matches the TS Object that it is expected to be, else it will throw an error
         const expense = createExpenseSchema.parse(data);
@@ -54,7 +59,7 @@ export const ExpensesRoutes = new Hono()
         c.status(201); // returns a `201 created` status code
         return c.json(expense);
     })
-    .delete('/:id{[0-9]+}', async c => {
+    .delete('/:id{[0-9]+}', getUser, async c => {
         const id = Number.parseInt(c.req.param('id'));
         const expense = fakeExpenses.findIndex(e => e.id === id);
         if (!expense) {

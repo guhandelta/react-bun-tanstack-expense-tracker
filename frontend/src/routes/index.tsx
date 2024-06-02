@@ -44,14 +44,14 @@ function Index() {
 
     return (
     <>
-        <Card className='w-[350px] m-auto'>
-            <CardHeader>
-                <CardTitle>Total Spent</CardTitle>
-                <CardDescription>This is what you've spent:</CardDescription>
+        <Card className='w-[350px] m-auto flex'>
+            <CardHeader className='mt-[12em]'>
+                <CardTitle className='font-bold text-2xl my-4'>Total Spent</CardTitle>
+                <CardDescription className='text-xl'>This is what you've spent:</CardDescription>
             </CardHeader>
-            <CardContent>
-                <p>{ isPending ? '...' : data }</p>
-        </CardContent>
+            <CardContent className='pt-[74%] px-8'>
+                <p className='font-bold'>{ isPending ? '...' : data }</p>
+            </CardContent>
         </Card>
     </>
     )
