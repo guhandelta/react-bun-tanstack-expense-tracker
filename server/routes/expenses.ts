@@ -1,18 +1,23 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
+
 import { getUser } from "../kinde";
+import { db } from "../db";
+import { expenses as expenseTable } from '../db/schema/expenses';
+import { eq } from "drizzle-orm";
 
 const fakeExpenses: Expense[] = [
-    {id: 1, title: 'Groceries', amount: 100},
-    {id: 2, title: 'Rent', amount: 1000},
-    {id: 3, title: 'Car', amount: 5000},
+    {id: 1, title: 'Groceries', amount: "100"},
+    {id: 2, title: 'Rent', amount: "1000"},
+    {id: 3, title: 'Car', amount: "5000"},
 ];
 
 const expemseSchema = z.object({
     id: z.number().int().positive().min(1),
     title: z.string().min(3).max(75),
-    amount: z.number().int().positive(),
+    // In the database, it is still a numeric(decimal) value, and we can still perform some math operations on it, but as soons as it comes into the JavaScript world it becomes a string, to make sure that everything is safe
+    amount: z.string(),
 });
 
 
@@ -27,8 +32,17 @@ export const ExpensesRoutes = new Hono()
     .get('/', getUser, async c => {
         // Grab the user object from the context => extract the User ID to get the expenses for that user
         const user = c.var.user;
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        return c.json(fakeExpenses)
+
+        const expenses = await db
+            .select()
+            .from(expenseTable)
+            .where( 
+                eq(
+                    expenseTable.userId, user.id
+                )
+            );
+
+        return c.json({ expenses })
     })
     /* Dynamic route that takes in an id as path param and returns the expense with that id
     Hono] allows us to pass in a regex to validate the path param, the one passed in here is for 1 or more numbers only
@@ -46,18 +60,26 @@ export const ExpensesRoutes = new Hono()
     .get('/total-spent', getUser, async c => {
         // This is just to simulate a delay in the API response
         await new Promise(resolve => setTimeout(resolve, 1000));
-        const total = fakeExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+        const total = fakeExpenses.reduce((acc, curr) => acc + +curr.amount, 0);
         return c.json({ total })
     })
     // zValidator() happens before the route is reached and made sure the data passed in is valid
-    .post('/', zValidator("json", createExpenseSchema), getUser, async c => {
-        const data = await c.req.valid("json"); // .json() is replaced with valid("json"), which contain anything that was validated before the route
-        // An Expense object is created from the data received from the request only if it matches the TS Object that it is expected to be, else it will throw an error
-        const expense = createExpenseSchema.parse(data);
-        fakeExpenses.push({ ...expense, id: fakeExpenses.length+1});
-        console.log(expense);
+    .post('/', getUser, zValidator("json", createExpenseSchema), getUser, async c => {
+        const expense = await c.req.valid("json"); // .json() is replaced with valid("json"), which contain anything that was validated before the route
+        // Grab the user details from the user object in the context
+        const user = c.var.user;
+        
+        const result = await db.insert(expenseTable).values({
+            //  The expense that has been validated with zod
+            ...expense,
+            userId: user.id
+        })
+        // This will go back the result of inserting the expense into the database
+        .returning();
+        
+
         c.status(201); // returns a `201 created` status code
-        return c.json(expense);
+        return c.json(result);
     })
     .delete('/:id{[0-9]+}', getUser, async c => {
         const id = Number.parseInt(c.req.param('id'));

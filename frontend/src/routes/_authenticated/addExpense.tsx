@@ -16,7 +16,7 @@ function AddExpense(){
     const form = useForm({
         defaultValues: {
             title: '',
-            amount: 0
+            amount: ''
         },
         onSubmit: async ({ value }) => {
             await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -74,7 +74,7 @@ function AddExpense(){
                                             value={field.state.value}
                                             onBlur={field.handleBlur}
                                             type='number'
-                                            onChange={(e) => field.handleChange(Number(e.target.value))}
+                                            onChange={(e) => field.handleChange(e.target.value)}
                                         />
                                         {/* To show the validation state of the current Field, usually it's wrapped in a function and used as a component Eg: <FieldInfo /> */}
                                         {field.state.meta.touchedErrors ? (
